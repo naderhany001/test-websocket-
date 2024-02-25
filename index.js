@@ -86,7 +86,7 @@ function printHello() {
   }
   
   // Set interval to execute printHello function every 1000 milliseconds (1 second)
-  const intervalId = setInterval(printHello, 1000);
+const intervalId = setInterval(printHello, 90);
   
   // Stop the interval after 10 seconds (for demonstration purposes)
 // console.log('WebSocket server is running on port 8080');
