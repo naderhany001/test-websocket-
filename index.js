@@ -89,10 +89,6 @@ function printHello() {
   const intervalId = setInterval(printHello, 1000);
   
   // Stop the interval after 10 seconds (for demonstration purposes)
-  setTimeout(() => {
-    clearInterval(intervalId);
-    console.log("Interval stopped after 10 seconds.");
-  }, 10000);
 // console.log('WebSocket server is running on port 8080');
 
 ///// test /////
