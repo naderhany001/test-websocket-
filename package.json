@@ -1,0 +1,11 @@
+{
+  "name": "websocket_server",
+  "version": "1.0.0",
+  "description": "simple websocket server",
+  "main": "index.js",
+  "scripts": {
+    "test": "node index.js"
+  },
+  "author": "Nader Hany",
+  "license": "ISC"
+}
