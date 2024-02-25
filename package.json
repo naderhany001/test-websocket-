@@ -7,5 +7,8 @@
     "test": "node index.js"
   },
   "author": "Nader Hany",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "ws": "^8.16.0"
+  }
 }
