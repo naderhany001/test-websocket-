@@ -12,7 +12,7 @@ def on_close(ws):
 def on_open(ws):
     print("Connection established")
     # Send a message to the server after connection is established
-    ws.send("Hello, WebSocket server!")
+    ws.send("Hello, NaderHany server!")
 
 if __name__ == "__main__":
     # WebSocket server URL
