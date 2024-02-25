@@ -16,7 +16,9 @@ def on_open(ws):
 
 if __name__ == "__main__":
     # WebSocket server URL
-    websocket_url = "wss://test-websocket-po6o.onrender.com"
+    # websocket_url = "wss://test-websocket-po6o.onrender.com"
+    websocket_url = "ws://localhost:8080"
+
 
     # Create a WebSocket instance
     ws = websocket.WebSocketApp(websocket_url,

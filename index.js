@@ -33,26 +33,31 @@ function parseCmd(rawcmd) {
 }
 
 // requirements
-// 1- connection list has drone and pc id's
+// 1- connection map has drone and pc id's , ws
 // 2- drone-speaker queue list
 // 3- drone-mic queue list
+let registeredDrones = new Map();
+let connections = [];
 
-function execCMD(parsedCmd) {
+function execCMD(cmd, ws) {
   // 1- parse cmd
   // 2- exec=>
-  //      - connection => add the add connection to the connection list
+  //      - connection => add the add connection to the connection list - find drone ws and you have pc ws
   //      - register   => add the drone-mic and drone-speaker queues to the droneSpeakers and droneMics lists
   //      - disconnect => remove the pc id from the connection list
+  let c = parseCmd(cmd);
+  if (c.type === "register") {
+    connecedDevices.set(c.drone, ws);
+  }
+  if (c.type === "connect") {
+  }
 }
 
 function handleEvents() {
-    // 1- here we need to loop on each connection in the connection list
-    // 2- in a connection if 
+  // 1- here we need to loop on each connection in the connection list
+  // 2- in a connection if drone-speaker queue not empty then send to the drone
+  // 3- in a connection if drone-mic is not empty then send to the pc
 }
-
-
-
-
 
 /************************ HTTP ************************/
 const httpServer = http.createServer((req, res) => {
@@ -65,10 +70,12 @@ httpServer.listen(8080, () => {
 
 /************************ WS ************************/
 const wss = new WebSocket.Server({ server: httpServer });
-
-wss.on("connection", function connection(ws) {
+let s = [];
+wss.on("connection", function connection(ws, req) {
   console.log("WebSocket client connected");
-
+  s.push(ws);
+  const clientAddress = req.connection.remoteAddress;
+  console.log('WebSocket client connected from:', clientAddress);
   ws.on("message", function incoming(message) {
     console.log("Received: %s", message);
 
@@ -82,13 +89,22 @@ wss.on("connection", function connection(ws) {
 });
 
 function printHello() {
-    console.log("Hello, world!");
+  //   console.log("Hello, world!");
+  if (s.length > 0) {
+    for (let i in s) {
+      try {
+        s[i].send("hello by nader server", i);
+      } catch (error) {
+        console.log("error not found");
+      }
+    }
   }
-  
-  // Set interval to execute printHello function every 1000 milliseconds (1 second)
-const intervalId = setInterval(printHello, 90);
-  
-  // Stop the interval after 10 seconds (for demonstration purposes)
+}
+
+// Set interval to execute printHello function every 1000 milliseconds (1 second)
+const intervalId = setInterval(printHello, 1000);
+
+// Stop the interval after 10 seconds (for demonstration purposes)
 // console.log('WebSocket server is running on port 8080');
 
 ///// test /////
