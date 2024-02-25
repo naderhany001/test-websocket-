@@ -9,6 +9,7 @@
   "author": "Nader Hany",
   "license": "ISC",
   "dependencies": {
+    "http": "^0.0.1-security",
     "ws": "^8.16.0"
   }
 }
