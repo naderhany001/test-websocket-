@@ -1,27 +1,79 @@
+const { log } = require("console");
 const Queue = require("./queue");
 const http = require("http");
 const WebSocket = require("ws");
 
+
+let registeredDevices = new Map();
+let connections = new Map();
+
+function removeNoise(prefix, array) {
+  // Convert the prefix to the number of bytes
+  let bytesToRemove = prefix ; // Assuming prefix is represented in hexadecimal format
+  let trimmedArray = array.slice(bytesToRemove);
+  let removedBytes = array.slice(0, bytesToRemove);
+  let removedString = removedBytes.toString('utf-8'); 
+  // console.log("Removed bytes as string:", removedString);
+  return trimmedArray;
+}
+
+function execCMD(cmd, ws) {
+  let c = parseCmd(cmd);
+
+  if (c.type === "register") {
+    registeredDevices.set(c.device, { id: c.device, socket: ws, busy: false });
+    console.log("registering ", c.device);
+  }
+  if (c.type === "connect") {
+    let a = registeredDevices.get(c.drone);
+    console.log("connecting ", c.pc, "with ", a.id);
+    connections.set(c.pc, registeredDevices.get(c.drone));
+    connections.set(c.drone, registeredDevices.get(c.pc));
+  }
+  if (c.type === "disconnect") {
+    let tmp = connections.get(c.pc).id;
+    connections.delete(c.pc);
+    connections.delete(tmp);
+    ws.send("disconnected");
+  }
+  if (c.type === "stream") {
+    connections.get(c.device).socket.send(c.stream);
+    // let decodedData = Buffer.from(c.stream, 'base64');
+    // Send the decoded data as bytes
+    // connections.get(c.device).socket.send(decodedData);
+  }
+}
+
 function parseCmd(rawcmd) {
   try {
-    let tmp = rawcmd.split(" ");
+    let tmp = rawcmd.toString().split(" ");
     if (tmp[0] === "connect") {
       return {
         type: "connect",
-        pc: tmp[2],
-        drone: tmp[3]
+        pc: tmp[1],
+        drone: tmp[2]
       };
     }
     if (tmp[0] === "register") {
       return {
         type: "register",
-        drone: tmp[2]
+        device: tmp[1]
       };
     }
     if (tmp[0] === "disconnect") {
       return {
         type: "disconnect",
-        pc: tmp[2]
+        pc: tmp[1]
+      };
+    }
+    if (tmp[0] === "stream") {
+      let strr =tmp[0]+' '+tmp[1]+' ';
+      const len = strr.length;
+
+      return {
+        type: "stream",
+        device: tmp[1],
+        stream: removeNoise(len,rawcmd)
       };
     }
   } catch (error) {
@@ -32,32 +84,6 @@ function parseCmd(rawcmd) {
   }
 }
 
-// requirements
-// 1- connection map has drone and pc id's , ws
-// 2- drone-speaker queue list
-// 3- drone-mic queue list
-let registeredDrones = new Map();
-let connections = [];
-
-function execCMD(cmd, ws) {
-  // 1- parse cmd
-  // 2- exec=>
-  //      - connection => add the add connection to the connection list - find drone ws and you have pc ws
-  //      - register   => add the drone-mic and drone-speaker queues to the droneSpeakers and droneMics lists
-  //      - disconnect => remove the pc id from the connection list
-  let c = parseCmd(cmd);
-  if (c.type === "register") {
-    connecedDevices.set(c.drone, ws);
-  }
-  if (c.type === "connect") {
-  }
-}
-
-function handleEvents() {
-  // 1- here we need to loop on each connection in the connection list
-  // 2- in a connection if drone-speaker queue not empty then send to the drone
-  // 3- in a connection if drone-mic is not empty then send to the pc
-}
 
 /************************ HTTP ************************/
 const httpServer = http.createServer((req, res) => {
@@ -73,36 +99,31 @@ const wss = new WebSocket.Server({ server: httpServer });
 let s = [];
 wss.on("connection", function connection(ws, req) {
   console.log("WebSocket client connected");
-  s.push(ws);
-  const clientAddress = req.connection.remoteAddress;
-  console.log('WebSocket client connected from:', clientAddress);
   ws.on("message", function incoming(message) {
-    console.log("Received: %s", message);
 
-    ws.send("Echo: " + message);
+    execCMD(message, ws);
   });
 
-  // Event listener for when a client disconnects from the server
   ws.on("close", function() {
     console.log("WebSocket client disconnected");
   });
 });
 
-function printHello() {
-  //   console.log("Hello, world!");
-  if (s.length > 0) {
-    for (let i in s) {
-      try {
-        s[i].send("hello by nader server", i);
-      } catch (error) {
-        console.log("error not found");
-      }
-    }
-  }
-}
+// function printHello() {
+//   //   console.log("Hello, world!");
+//   if (s.length > 0) {
+//     for (let i in s) {
+//       try {
+//         s[i].send("hello by nader server", i);
+//       } catch (error) {
+//         console.log("error not found");
+//       }
+//     }
+//   }
+// }
 
-// Set interval to execute printHello function every 1000 milliseconds (1 second)
-const intervalId = setInterval(printHello, 1000);
+// // Set interval to execute printHello function every 1000 milliseconds (1 second)
+// const intervalId = setInterval(printHello, 1000);
 
 // Stop the interval after 10 seconds (for demonstration purposes)
 // console.log('WebSocket server is running on port 8080');
