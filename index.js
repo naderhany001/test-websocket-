@@ -37,7 +37,12 @@ function execCMD(cmd, ws) {
     ws.send("disconnected");
   }
   if (c.type === "stream") {
-    connections.get(c.device).socket.send(c.stream);
+    try {
+      connections.get(c.device).socket.send(c.stream);
+      
+    } catch (error) {
+      console.log('error sending stream ');
+    }
     // let decodedData = Buffer.from(c.stream, 'base64');
     // Send the decoded data as bytes
     // connections.get(c.device).socket.send(decodedData);

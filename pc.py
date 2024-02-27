@@ -2,7 +2,7 @@ import threading
 import time
 from call import VoiceCall
 
-call = VoiceCall("pc1234", "ws://localhost:8080")
+call = VoiceCall("pc1234", "wss://test-websocket-po6o.onrender.com")
 
 def handleCalls():
     time.sleep(3)

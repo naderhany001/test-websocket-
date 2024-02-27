@@ -2,8 +2,8 @@ import threading
 import time
 from call import VoiceCall
 
-call = VoiceCall("dr1234", "ws://localhost:8080")
-print("here say aha")
+call = VoiceCall("dr1234", "wss://test-websocket-po6o.onrender.com")
+
 
 def handleCalls():
     print("ping ...")
